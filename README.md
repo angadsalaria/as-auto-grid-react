@@ -3,6 +3,7 @@
 A React + TypeScript rewrite of [as-auto-grid](https://github.com/angadsalaria/as-auto-grid), an Angular 2 data grid component built in 2016. This rewrite was developed entirely by [Claude](https://claude.ai) (Anthropic's AI) using Claude Code.
 
 **Live demo:** https://angadsalaria.github.io/as-auto-grid-react/
+
 **Original Angular app:** https://angadsalaria.github.io/as-auto-grid/
 
 ---
