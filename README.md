@@ -11,7 +11,7 @@ A React + TypeScript rewrite of [as-auto-grid](https://github.com/angadsalaria/a
 
 | Angular 2 (original) | React (rewrite) |
 |---|---|
-| ![Angular version](docs/screenshot-angular.png) | ![React version](docs/screenshot-react.png) |
+| ![Angular version](docs/before.png) | ![React version](docs/after.png) |
 
 ---
 
