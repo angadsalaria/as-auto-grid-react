@@ -49,10 +49,11 @@ Clicking a different column always resets to ascending, independent of where the
 | | Original | Rewrite |
 |---|---|---|
 | Framework | Angular 2.0.0 | React 18 |
-| Language | TypeScript (compiled via `tsc`) | TypeScript (via Vite) |
-| Module loading | SystemJS | Vite (ESM) |
-| Styling | Bootstrap 3 + glyphicons | Tailwind CSS |
-| Data transforms | Lodash (Angular pipe) | Lodash (pure functions) |
+| Language | TypeScript 2.x | TypeScript 6.x |
+| Module loading | SystemJS 0.19 | Vite 8 |
+| Styling | Bootstrap 3 + glyphicons | Tailwind CSS 4 |
+| Data transforms | Lodash 4.x (Angular pipe) | Lodash 4.x (pure functions) |
+| Test runner | — | Vitest 4 + React Testing Library 16 |
 
 ---
 
