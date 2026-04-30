@@ -20,7 +20,7 @@ function GridTable() {
         </tr>
       ) : (
         rows.map((row) => (
-          <tr key={row.id} className="hover:bg-blue-50 transition-colors">
+          <tr key={row.id} className="hover:bg-blue-50">
             <td className="px-4 py-3 text-sm text-gray-700">{row.id}</td>
             <td className="px-4 py-3 text-sm text-gray-700">{row.fname}</td>
             <td className="px-4 py-3 text-sm text-gray-700">{row.lname}</td>
