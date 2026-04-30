@@ -20,8 +20,11 @@ export function applyGridTransform(data: Row[], state: GridState): Row[] {
 }
 
 export function updateSorting(current: Sorting, column: keyof Row): Sorting {
-  return {
-    path: column,
-    isAscending: !current.isAscending,
+  if (current.path !== column) {
+    return { path: column, isAscending: true }
   }
+  if (current.isAscending === true) {
+    return { path: column, isAscending: false }
+  }
+  return { path: null, isAscending: null }
 }

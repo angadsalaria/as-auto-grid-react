@@ -69,14 +69,23 @@ describe('AutoGrid – sorting', () => {
     expect(getCellsOfRow(rows[0])[1]).toBe('Sam')
   })
 
-  it('toggles back to ascending on third click', async () => {
+  it('resets to unsorted on third click', async () => {
     renderGrid()
     const header = screen.getByText('First Name')
     await userEvent.click(header)
     await userEvent.click(header)
     await userEvent.click(header)
     const rows = getBodyRows()
-    expect(getCellsOfRow(rows[0])[1]).toBe('Angad')
+    expect(getCellsOfRow(rows[0])[0]).toBe('1')
+  })
+
+  it('clicking a different column always starts ascending', async () => {
+    renderGrid()
+    await userEvent.click(screen.getByText('First Name'))
+    await userEvent.click(screen.getByText('First Name'))
+    await userEvent.click(screen.getByText('Last Name'))
+    const rows = getBodyRows()
+    expect(getCellsOfRow(rows[0])[2]).toBe('Adams')
   })
 
   it('shows ↓ icon when sorted ascending', async () => {

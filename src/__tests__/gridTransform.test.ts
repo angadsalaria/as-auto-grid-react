@@ -132,26 +132,29 @@ describe('applyGridTransform – filter + sort combined', () => {
   })
 })
 
-// --- updateSorting ---
+// --- updateSorting (three-state: unsorted → asc → desc → unsorted) ---
 
 describe('updateSorting', () => {
-  it('first click on any column sets ascending (toggles null → true)', () => {
+  it('first click: unsorted → ascending', () => {
     const result = updateSorting({ path: null, isAscending: null }, 'fname')
     expect(result).toEqual({ path: 'fname', isAscending: true })
   })
 
-  it('second click on same column sets descending', () => {
+  it('second click same column: ascending → descending', () => {
     const result = updateSorting({ path: 'fname', isAscending: true }, 'fname')
     expect(result).toEqual({ path: 'fname', isAscending: false })
   })
 
-  it('third click on same column sets ascending again', () => {
+  it('third click same column: descending → unsorted', () => {
     const result = updateSorting({ path: 'fname', isAscending: false }, 'fname')
-    expect(result).toEqual({ path: 'fname', isAscending: true })
+    expect(result).toEqual({ path: null, isAscending: null })
   })
 
-  it('clicking a different column toggles direction and switches path', () => {
-    const result = updateSorting({ path: 'fname', isAscending: true }, 'lname')
-    expect(result).toEqual({ path: 'lname', isAscending: false })
+  it('clicking a different column always starts at ascending', () => {
+    const fromAsc = updateSorting({ path: 'fname', isAscending: true }, 'lname')
+    expect(fromAsc).toEqual({ path: 'lname', isAscending: true })
+
+    const fromDesc = updateSorting({ path: 'fname', isAscending: false }, 'lname')
+    expect(fromDesc).toEqual({ path: 'lname', isAscending: true })
   })
 })

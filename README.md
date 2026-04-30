@@ -13,19 +13,33 @@ A React + TypeScript rewrite of [as-auto-grid](https://github.com/angadsalaria/a
 |---|---|
 | ![Angular version](docs/screenshot-angular.png) | ![React version](docs/screenshot-react.png) |
 
-> Screenshots: drop `docs/screenshot-angular.png` and `docs/screenshot-react.png` into the repo to populate the table above.
-
 ---
 
 ## What it does
 
 Two independent sortable and filterable data grids, each with:
 
-- **Per-column sorting** — click a column header to sort ascending, click again to sort descending. The direction toggles indefinitely.
+- **Per-column sorting** — click a column header to sort ascending, click again to sort descending, click a third time to return to unsorted. Clicking a different column always resets to ascending.
 - **Per-column filtering** — a dropdown of unique values for each filterable column. Multiple filters combine with AND logic.
 - **Filter reset** — a clear button appears next to the dropdown when a filter is active.
 - **Filter-then-sort pipeline** — filtering is always applied before sorting.
 - **Independent state** — Grid 1 and Grid 2 have completely separate sort and filter state.
+
+---
+
+## Enhancement over the original
+
+During development, Claude identified an ambiguity in the original Angular app's sorting behaviour and proposed an improvement:
+
+> The original `Sorting.update()` method toggled `isAscending` on every click regardless of which column was clicked, meaning the sort direction was shared global state. This produced two quirks: there was no way to return to an unsorted state, and clicking a new column would inherit the previous sort direction rather than starting fresh at ascending.
+
+The React version implements a cleaner **three-state sort cycle**:
+
+```
+unsorted → ascending → descending → unsorted → …
+```
+
+Clicking a different column always resets to ascending, independent of where the previous sort left off. This behaviour was confirmed with the owner before implementation and is covered by dedicated tests.
 
 ---
 
@@ -60,7 +74,7 @@ The core data transform logic lives entirely in `gridTransform.ts` as pure funct
 
 ## Testing
 
-Tests were written before implementation was verified in the browser, targeting functional parity with the original Angular app.
+Tests were written before implementation was verified in the browser, targeting functional parity with the original Angular app plus the three-state sort enhancement.
 
 **Framework:** [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/react)
 
@@ -76,9 +90,11 @@ Tests  44 passed (44)
 
 44/44 passed on the first run, with one trivial assertion corrected mid-run (expected `" "` vs actual `""` for the blank filter option's text content).
 
+The three-state sort enhancement was added afterwards, bringing the suite to **45 tests (45 passed)**.
+
 ### Test structure
 
-**`gridTransform.test.ts` — 21 tests (pure logic)**
+**`gridTransform.test.ts` — 22 tests (pure logic)**
 
 Tests the filter/sort pipeline and sort-state machine in isolation, with no React involved:
 
@@ -86,14 +102,14 @@ Tests the filter/sort pipeline and sort-state machine in isolation, with no Reac
 - Filter by single column, multiple columns (AND), empty string (no-op), no matches
 - Sort ascending/descending by string and numeric columns
 - Filter + sort combined (filter applied first)
-- `updateSorting` state machine: `null → asc → desc → asc` toggle, direction inheritance when switching columns
+- `updateSorting` state machine: `unsorted → asc → desc → unsorted` cycle; new column always starts at ascending
 
-**`AutoGrid.test.tsx` — 19 tests (component behaviour)**
+**`AutoGrid.test.tsx` — 20 tests (component behaviour)**
 
 Renders the full `<AutoGrid>` + `<ColumnHeader>` tree and exercises it via user interactions:
 
 - Initial render: all 6 rows, correct cell values
-- Sort: 3-click toggle (asc → desc → asc), correct sort arrow icon per direction, icon only on active sort column, sorting by different columns
+- Sort: 3-click cycle (asc → desc → unsorted), correct sort arrow icon per direction, icon only on active sort column, new column always starts ascending
 - Filter: dropdown options match unique sorted data values, rows filtered correctly, reset button visibility (shown only when active), filter cleared on reset, multi-column AND filter, empty-state message when no rows match
 - Combined: filter + sort applied in correct order
 
