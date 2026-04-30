@@ -1,27 +1,118 @@
-# React + TypeScript + Vite
+# as-auto-grid-react
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + TypeScript rewrite of [as-auto-grid](https://github.com/angadsalaria/as-auto-grid), an Angular 2 data grid component built in 2016. This rewrite was developed entirely by [Claude](https://claude.ai) (Anthropic's AI) using Claude Code.
 
-Currently, two official plugins are available:
+**Live demo:** https://angadsalaria.github.io/as-auto-grid-react/
+**Original Angular app:** https://angadsalaria.github.io/as-auto-grid/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## Before / After
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+| Angular 2 (original) | React (rewrite) |
+|---|---|
+| ![Angular version](docs/screenshot-angular.png) | ![React version](docs/screenshot-react.png) |
 
-- Configure the top-level `parserOptions` property like this:
+> Screenshots: drop `docs/screenshot-angular.png` and `docs/screenshot-react.png` into the repo to populate the table above.
 
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
+---
+
+## What it does
+
+Two independent sortable and filterable data grids, each with:
+
+- **Per-column sorting** — click a column header to sort ascending, click again to sort descending. The direction toggles indefinitely.
+- **Per-column filtering** — a dropdown of unique values for each filterable column. Multiple filters combine with AND logic.
+- **Filter reset** — a clear button appears next to the dropdown when a filter is active.
+- **Filter-then-sort pipeline** — filtering is always applied before sorting.
+- **Independent state** — Grid 1 and Grid 2 have completely separate sort and filter state.
+
+---
+
+## Stack
+
+| | Original | Rewrite |
+|---|---|---|
+| Framework | Angular 2.0.0 | React 18 |
+| Language | TypeScript (compiled via `tsc`) | TypeScript (via Vite) |
+| Module loading | SystemJS | Vite (ESM) |
+| Styling | Bootstrap 3 + glyphicons | Tailwind CSS |
+| Data transforms | Lodash (Angular pipe) | Lodash (pure functions) |
+
+---
+
+## Architecture
+
+```
+src/
+├── types/index.ts            # Shared Row, GridState, Sorting types
+├── utils/gridTransform.ts    # Pure filter/sort functions (no React)
+├── context/GridContext.tsx   # Per-grid state via React Context
+├── components/
+│   ├── AutoGrid.tsx          # Grid wrapper — provides context, renders tbody
+│   └── ColumnHeader.tsx      # Sort arrow + filter dropdown header cell
+└── App.tsx                   # Two grids with shared data, isolated state
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+The core data transform logic lives entirely in `gridTransform.ts` as pure functions, making it independently testable without any React machinery.
+
+---
+
+## Testing
+
+Tests were written before implementation was verified in the browser, targeting functional parity with the original Angular app.
+
+**Framework:** [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/react)
+
+### Test results — first run
+
+```
+✓ src/__tests__/gridTransform.test.ts   (21 tests)
+✓ src/__tests__/AutoGrid.test.tsx       (19 tests)
+✓ src/__tests__/App.test.tsx            ( 4 tests)
+
+Tests  44 passed (44)
+```
+
+44/44 passed on the first run, with one trivial assertion corrected mid-run (expected `" "` vs actual `""` for the blank filter option's text content).
+
+### Test structure
+
+**`gridTransform.test.ts` — 21 tests (pure logic)**
+
+Tests the filter/sort pipeline and sort-state machine in isolation, with no React involved:
+
+- `getFilterOptions` returns unique, alphabetically sorted values per column
+- Filter by single column, multiple columns (AND), empty string (no-op), no matches
+- Sort ascending/descending by string and numeric columns
+- Filter + sort combined (filter applied first)
+- `updateSorting` state machine: `null → asc → desc → asc` toggle, direction inheritance when switching columns
+
+**`AutoGrid.test.tsx` — 19 tests (component behaviour)**
+
+Renders the full `<AutoGrid>` + `<ColumnHeader>` tree and exercises it via user interactions:
+
+- Initial render: all 6 rows, correct cell values
+- Sort: 3-click toggle (asc → desc → asc), correct sort arrow icon per direction, icon only on active sort column, sorting by different columns
+- Filter: dropdown options match unique sorted data values, rows filtered correctly, reset button visibility (shown only when active), filter cleared on reset, multi-column AND filter, empty-state message when no rows match
+- Combined: filter + sort applied in correct order
+
+**`App.test.tsx` — 4 tests (grid independence)**
+
+Confirms Grid 1 and Grid 2 are fully isolated:
+
+- Both render all 6 rows initially
+- Sorting Grid 1 does not reorder Grid 2
+- Filtering Grid 1 does not affect Grid 2's row count
+- Filtering Grid 2 does not affect Grid 1's row count
+
+---
+
+## Development
+
+```bash
+npm install
+npm run dev       # start dev server
+npm test          # run all tests
+npm run build     # production build
+```
